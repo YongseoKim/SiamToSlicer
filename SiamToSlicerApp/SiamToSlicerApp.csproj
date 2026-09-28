@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <Target Name="BundleNativeRuntime" AfterTargets="Build;Publish">
+    <PropertyGroup>
+      <SiamizeSource>C:\Users\user\siamize\build\Release</SiamizeSource>
+      <Dcm2NiixSource>C:\Users\user\siamize\tools</Dcm2NiixSource>
+      <SiamizeModel>$(UserProfile)\AppData\Local\siamize\models\fold_0_fp16.onnx</SiamizeModel>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SiamizeSource)\siamize.exe')" Text="siamize.exe was not found at $(SiamizeSource)." />
+    <Error Condition="!Exists('$(Dcm2NiixSource)\dcm2niix.exe')" Text="dcm2niix.exe was not found at $(Dcm2NiixSource)." />
+    <Error Condition="!Exists('$(SiamizeModel)')" Text="fold_0_fp16.onnx was not found at $(SiamizeModel)." />
+    <ItemGroup>
+      <_SiamizeFiles Include="$(SiamizeSource)\siamize.exe" />
+      <_SiamizeFiles Include="$(SiamizeSource)\onnxruntime.dll" />
+      <_SiamizeFiles Include="$(SiamizeSource)\onnxruntime_providers_shared.dll" />
+      <_SiamizeFiles Include="$(SiamizeSource)\onnxruntime_providers_cuda.dll" />
+      <_DcmFiles Include="$(Dcm2NiixSource)\dcm2niix.exe" />
+      <_DcmFiles Include="$(Dcm2NiixSource)\*.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_SiamizeFiles)" DestinationFolder="$(TargetDir)runtime\siamize\" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(SiamizeModel)" DestinationFolder="$(TargetDir)runtime\siamize\" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_DcmFiles)" DestinationFolder="$(TargetDir)runtime\dcm2niix\" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_SiamizeFiles)" DestinationFolder="$(PublishDir)runtime\siamize\" SkipUnchangedFiles="true" Condition="'$(PublishDir)' != ''" />
+    <Copy SourceFiles="$(SiamizeModel)" DestinationFolder="$(PublishDir)runtime\siamize\" SkipUnchangedFiles="true" Condition="'$(PublishDir)' != ''" />
+    <Copy SourceFiles="@(_DcmFiles)" DestinationFolder="$(PublishDir)runtime\dcm2niix\" SkipUnchangedFiles="true" Condition="'$(PublishDir)' != ''" />
+  </Target>
+
+</Project>
